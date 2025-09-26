@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-api
+  labels:
+    app: llama-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llama-api
+  template:
+    metadata:
+      labels:
+        app: llama-api
+    spec:
+      containers:
+      - name: llama-api
+        image: llama-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        - name: MODEL_CACHE_DIR
+          value: "/app/models"
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-api-service
+spec:
+  selector:
+    app: llama-api
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: llama-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: llama-api
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
