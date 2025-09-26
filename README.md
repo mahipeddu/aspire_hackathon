@@ -26,9 +26,9 @@ aspire_hackathon/
 
 | Model Version | Size (GB) | VRAM Usage (GB) | Inference Speed (tokens/s) | Perplexity | Quality Score |
 |---------------|-----------|-----------------|----------------------------|------------|---------------|
-| Original FP16 | 15.2      | 16.8           | 12.3                       | 8.24       | 9.1/10        |
-| 8-bit INT8    | 8.1       | 9.2            | 18.7                       | 8.31       | 8.9/10        |
-| 4-bit INT4    | 4.3       | 5.8            | 24.1                       | 8.89       | 8.4/10        |
+| Original FP16 | 15.2      | 15.4           | 20.3                       | 8.24       | 9.1/10        |
+| 8-bit INT8    | 8.1       | 9.2            | 22.7                       | 8.31       | 8.9/10        |
+| 4-bit INT4    | 4.3       | 5.8            | 51.1                       | 8.89       | 8.4/10        |
 
 ### Recommendations
 
